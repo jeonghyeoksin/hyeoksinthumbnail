@@ -4,7 +4,7 @@ import {
   Loader2, Image as ImageIcon, Sparkles, Youtube, Layout, 
   Palette, Type as TypeIcon, Lightbulb, Users, Smile, 
   Focus, Paintbrush, Play, MoreVertical, ThumbsUp, MessageSquare,
-  Search, BrainCircuit, Key
+  Search, BrainCircuit, Key, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -39,7 +39,24 @@ export default function App() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [personImage, setPersonImage] = useState<{ data: string, mimeType: string } | null>(null);
+  const [customApiKey, setCustomApiKey] = useState<string>('');
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey) {
+      setCustomApiKey(savedKey);
+      setTempApiKey(savedKey);
+    }
+  }, []);
+
+  const handleSaveApiKey = () => {
+    localStorage.setItem('gemini_api_key', tempApiKey);
+    setCustomApiKey(tempApiKey);
+    setIsApiKeyModalOpen(false);
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -138,8 +155,11 @@ export default function App() {
     setIsGenerating(true);
     setError(null);
     try {
-      const currentApiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
-      if (!currentApiKey) throw new Error("API 키를 찾을 수 없습니다.");
+      const currentApiKey = customApiKey || process.env.API_KEY || process.env.GEMINI_API_KEY;
+      if (!currentApiKey) {
+        setIsApiKeyModalOpen(true);
+        throw new Error("API 키를 입력해주세요.");
+      }
       const ai = new GoogleGenAI({ apiKey: currentApiKey });
       const imageParts: any[] = [];
       if (personImage) {
@@ -180,8 +200,11 @@ export default function App() {
     setError(null);
 
     try {
-      const currentApiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
-      if (!currentApiKey) throw new Error("API 키를 찾을 수 없습니다.");
+      const currentApiKey = customApiKey || process.env.API_KEY || process.env.GEMINI_API_KEY;
+      if (!currentApiKey) {
+        setIsApiKeyModalOpen(true);
+        throw new Error("API 키를 입력해주세요.");
+      }
       const ai = new GoogleGenAI({ apiKey: currentApiKey });
 
       const response = await ai.models.generateContent({
@@ -238,15 +261,18 @@ export default function App() {
     setImageUrl(null);
 
     try {
-      if ((window as any).aistudio) {
+      if ((window as any).aistudio && !customApiKey) {
         const hasKey = await (window as any).aistudio.hasSelectedApiKey();
         if (!hasKey) {
           await (window as any).aistudio.openSelectKey();
         }
       }
 
-      const currentApiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
-      if (!currentApiKey) throw new Error("API 키를 찾을 수 없습니다.");
+      const currentApiKey = customApiKey || process.env.API_KEY || process.env.GEMINI_API_KEY;
+      if (!currentApiKey) {
+        setIsApiKeyModalOpen(true);
+        throw new Error("API 키를 입력해주세요.");
+      }
       const ai = new GoogleGenAI({ apiKey: currentApiKey });
 
       const response = await ai.models.generateContent({
@@ -349,11 +375,7 @@ export default function App() {
               CREATOR STUDIO PRO
             </div>
             <button
-              onClick={async () => {
-                if ((window as any).aistudio) {
-                  await (window as any).aistudio.openSelectKey();
-                }
-              }}
+              onClick={() => setIsApiKeyModalOpen(true)}
               className="text-xs font-bold text-white bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-full border border-white/10 transition-colors flex items-center gap-2"
             >
               <Key className="w-3.5 h-3.5" />
@@ -727,7 +749,107 @@ export default function App() {
         </AnimatePresence>
       </div>
 
+      {/* API Key Modal */}
+      <AnimatePresence>
+        {isApiKeyModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-neutral-900 border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Key className="w-5 h-5 text-purple-400" />
+                  API 키 설정
+                </h3>
+                <button onClick={() => setIsApiKeyModalOpen(false)} className="text-neutral-400 hover:text-white transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <p className="text-sm text-neutral-400">
+                  Vercel 등 외부 배포 환경에서 사용하기 위해 Gemini API 키를 입력해주세요. 입력하신 키는 브라우저 로컬 스토리지에만 안전하게 저장됩니다.
+                </p>
+                <input
+                  type="password"
+                  value={tempApiKey}
+                  onChange={(e) => setTempApiKey(e.target.value)}
+                  placeholder="AIzaSy..."
+                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                />
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setIsApiKeyModalOpen(false)}
+                    className="flex-1 px-4 py-3 rounded-xl font-bold text-neutral-300 bg-white/5 hover:bg-white/10 transition-all"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={handleSaveApiKey}
+                    className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 transition-all"
+                  >
+                    적용
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Developer Info */}
+      {/* API Key Modal */}
+      <AnimatePresence>
+        {isApiKeyModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-neutral-900 border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Key className="w-5 h-5 text-purple-400" />
+                  API 키 설정
+                </h3>
+                <button onClick={() => setIsApiKeyModalOpen(false)} className="text-neutral-400 hover:text-white transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <p className="text-sm text-neutral-400">
+                  Vercel 등 외부 배포 환경에서 사용하기 위해 Gemini API 키를 입력해주세요. 입력하신 키는 브라우저 로컬 스토리지에만 안전하게 저장됩니다.
+                </p>
+                <input
+                  type="password"
+                  value={tempApiKey}
+                  onChange={(e) => setTempApiKey(e.target.value)}
+                  placeholder="AIzaSy..."
+                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                />
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setIsApiKeyModalOpen(false)}
+                    className="flex-1 px-4 py-3 rounded-xl font-bold text-neutral-300 bg-white/5 hover:bg-white/10 transition-all"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={handleSaveApiKey}
+                    className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 transition-all"
+                  >
+                    적용
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <div className="fixed bottom-6 left-6 z-50 pointer-events-none">
         <div className="bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2 rounded-xl shadow-2xl flex items-center gap-2 pointer-events-auto">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />

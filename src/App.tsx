@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
 import { 
   Loader2, Image as ImageIcon, Sparkles, Youtube, Layout, 
   Palette, Type as TypeIcon, Lightbulb, Users, Smile, 
   Focus, Paintbrush, Play, MoreVertical, ThumbsUp, MessageSquare,
-  Search, BrainCircuit, Key, X
+  Search, BrainCircuit, Key, X, Coins, Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -41,6 +41,7 @@ export default function App() {
   const [personImage, setPersonImage] = useState<{ data: string, mimeType: string } | null>(null);
   const [customApiKey, setCustomApiKey] = useState<string>('');
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [isCostInfoOpen, setIsCostInfoOpen] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -371,6 +372,13 @@ export default function App() {
             <span className="font-bold text-xl tracking-tight">혁신 유튜브 썸네일 <span className="text-red-500">AI</span></span>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsCostInfoOpen(!isCostInfoOpen)}
+              className="text-xs font-bold text-white bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-full border border-white/10 transition-colors flex items-center gap-2"
+            >
+              <Info className="w-3.5 h-3.5" />
+              API 비용
+            </button>
             <div className="hidden sm:block text-xs font-mono text-neutral-500 bg-white/5 px-3 py-1 rounded-full border border-white/10">
               CREATOR STUDIO PRO
             </div>
@@ -748,6 +756,73 @@ export default function App() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* API Cost Info Overlay */}
+      <AnimatePresence>
+        {isCostInfoOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 20, y: -10 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            exit={{ opacity: 0, x: 20, y: -10 }}
+            className="fixed top-20 right-6 z-[60] w-80 bg-neutral-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-5 overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 via-red-500 to-pink-500" />
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-white flex items-center gap-2">
+                <Coins className="w-4 h-4 text-yellow-400" />
+                API 사용 비용 안내
+              </h3>
+              <button 
+                onClick={() => setIsCostInfoOpen(false)} 
+                className="p-1 hover:bg-white/10 rounded-lg text-neutral-400 hover:text-white transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="space-y-4 text-xs">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-neutral-300">Gemini 3 Flash</span>
+                  </div>
+                  <span className="font-mono text-red-400">$0.075 / 1M 토큰</span>
+                </div>
+                <p className="px-2 text-[10px] text-neutral-500 italic">기본 브레인스토밍 및 카피 생성</p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
+                  <div className="flex items-center gap-2">
+                    <BrainCircuit className="w-3.5 h-3.5 text-indigo-400" />
+                    <span className="text-neutral-300">Gemini 3.1 Pro</span>
+                  </div>
+                  <span className="font-mono text-indigo-400">$3.50 / 1M 토큰</span>
+                </div>
+                <p className="px-2 text-[10px] text-neutral-500 italic">딥리서치 및 고도화된 전략 분석</p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-3.5 h-3.5 text-pink-400" />
+                    <span className="text-neutral-300">이미지 생성 (1K)</span>
+                  </div>
+                  <span className="font-mono text-pink-400">약 $0.03 / 장</span>
+                </div>
+                <p className="px-2 text-[10px] text-neutral-500 italic">고품질 썸네일 배경 이미지 생성</p>
+              </div>
+
+              <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+                <p className="text-[10px] text-yellow-200/70 leading-relaxed">
+                  * 위 비용은 Google Cloud 표준 요금 기준 예상치입니다. 무료 티어 범위 내에서는 비용이 발생하지 않을 수 있습니다.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* API Key Modal */}
       <AnimatePresence>

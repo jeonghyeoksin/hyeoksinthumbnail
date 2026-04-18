@@ -22,6 +22,7 @@ interface FormData {
   mood: string;
   focus: string;
   style: string;
+  aspectRatio: string;
 }
 
 export default function App() {
@@ -30,7 +31,8 @@ export default function App() {
     audience: '',
     mood: '',
     focus: '',
-    style: ''
+    style: '',
+    aspectRatio: '16:9'
   });
   
   const [isGenerating, setIsGenerating] = useState(false);
@@ -175,7 +177,7 @@ export default function App() {
       const imageResponse = await ai.models.generateContent({
         model: 'gemini-3.1-flash-image-preview',
         contents: { parts: imageParts },
-        config: { imageConfig: { aspectRatio: '16:9', imageSize: '1K' } },
+        config: { imageConfig: { aspectRatio: formData.aspectRatio, imageSize: '1K' } },
       });
       let generatedImageUrl = null;
       const parts = imageResponse.candidates?.[0]?.content?.parts || [];
@@ -331,7 +333,7 @@ export default function App() {
         contents: { parts: imageParts },
         config: {
           imageConfig: {
-            aspectRatio: '16:9',
+            aspectRatio: formData.aspectRatio,
             imageSize: '1K',
           },
         },
@@ -544,6 +546,35 @@ export default function App() {
               />
             </div>
 
+            {/* Aspect Ratio Selection */}
+            <div className="md:col-span-2 space-y-3">
+              <label className="flex items-center gap-2 text-sm font-semibold text-neutral-300 uppercase tracking-wider">
+                <Layout className="w-4 h-4 text-orange-400" />
+                이미지 사이즈 / 비율
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { id: '16:9', label: 'YouTube (16:9)', desc: '표준 영상' },
+                  { id: '9:16', label: 'Shorts (9:16)', desc: '쇼츠/틱톡' },
+                  { id: '1:1', label: 'Square (1:1)', desc: '인스타그램' },
+                  { id: '4:3', label: 'Classic (4:3)', desc: '태블릿/사진' },
+                ].map((size) => (
+                  <button
+                    key={size.id}
+                    onClick={() => setFormData(prev => ({ ...prev, aspectRatio: size.id }))}
+                    className={`p-4 rounded-xl border transition-all text-left flex flex-col gap-1 ${
+                      formData.aspectRatio === size.id
+                        ? 'bg-orange-500/20 border-orange-500 text-white shadow-[0_0_20px_rgba(249,115,22,0.15)]'
+                        : 'bg-black/50 border-white/10 text-neutral-400 hover:border-white/20 hover:bg-white/5'
+                    }`}
+                  >
+                    <span className="text-sm font-bold">{size.label}</span>
+                    <span className="text-[10px] opacity-60">{size.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Person Photo (Optional) */}
             <div className="md:col-span-2 space-y-2">
               <label className="flex items-center gap-2 text-sm font-semibold text-neutral-300 uppercase tracking-wider">
@@ -681,7 +712,12 @@ export default function App() {
                 <div className="bg-[#1a1a1a] border border-white/10 rounded-3xl p-4 md:p-6 shadow-2xl">
                   {/* YouTube Video Card Mockup */}
                   <div className="max-w-[600px] mx-auto">
-                    <div className="relative aspect-video bg-black rounded-xl overflow-hidden group cursor-pointer">
+                    <div className={`relative bg-black rounded-xl overflow-hidden group cursor-pointer transition-all duration-500 ${
+                      formData.aspectRatio === '16:9' ? 'aspect-video' :
+                      formData.aspectRatio === '9:16' ? 'aspect-[9/16] max-h-[600px] mx-auto' :
+                      formData.aspectRatio === '1:1' ? 'aspect-square' :
+                      'aspect-[4/3]'
+                    }`}>
                       {imageUrl ? (
                         <>
                           <canvas 

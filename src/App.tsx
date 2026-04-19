@@ -4,7 +4,7 @@ import {
   Loader2, Image as ImageIcon, Sparkles, Youtube, Layout, 
   Palette, Type as TypeIcon, Lightbulb, Users, Smile, 
   Focus, Paintbrush, Play, MoreVertical, ThumbsUp, MessageSquare,
-  Search, BrainCircuit, Key, X, Coins, Info
+  Search, BrainCircuit, Key, X, Coins, Info, History
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -44,6 +44,7 @@ export default function App() {
   const [customApiKey, setCustomApiKey] = useState<string>('');
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [isCostInfoOpen, setIsCostInfoOpen] = useState(false);
+  const [isPatchNotesOpen, setIsPatchNotesOpen] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -375,11 +376,18 @@ export default function App() {
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setIsPatchNotesOpen(true)}
+              className="text-xs font-bold text-white bg-indigo-500/10 hover:bg-indigo-500/20 px-4 py-2 rounded-full border border-indigo-500/20 transition-colors flex items-center gap-2"
+            >
+              <History className="w-3.5 h-3.5 text-indigo-400" />
+              패치노트
+            </button>
+            <button
               onClick={() => setIsCostInfoOpen(!isCostInfoOpen)}
               className="text-xs font-bold text-white bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-full border border-white/10 transition-colors flex items-center gap-2"
             >
-              <Info className="w-3.5 h-3.5" />
-              API 비용
+              <Info className="w-3.5 h-3.5 text-blue-400" />
+              API 비용 (₩)
             </button>
             <div className="hidden sm:block text-xs font-mono text-neutral-500 bg-white/5 px-3 py-1 rounded-full border border-white/10">
               CREATOR STUDIO PRO
@@ -802,11 +810,11 @@ export default function App() {
             exit={{ opacity: 0, x: 20, y: -10 }}
             className="fixed top-20 right-6 z-[60] w-80 bg-neutral-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-5 overflow-hidden"
           >
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 via-red-500 to-pink-500" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-indigo-500" />
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-white flex items-center gap-2">
-                <Coins className="w-4 h-4 text-yellow-400" />
-                API 사용 비용 안내
+                <Coins className="w-4 h-4 text-emerald-400" />
+                API 추정 비용 안내 (KRW)
               </h3>
               <button 
                 onClick={() => setIsCostInfoOpen(false)} 
@@ -816,47 +824,111 @@ export default function App() {
               </button>
             </div>
             
-            <div className="space-y-4 text-xs">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5 text-red-400" />
-                    <span className="text-neutral-300">Gemini 3 Flash</span>
-                  </div>
-                  <span className="font-mono text-red-400">$0.075 / 1M 토큰</span>
+            <div className="space-y-4 text-[11px]">
+              <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 mb-4">
+                <div className="flex justify-between items-end mb-1">
+                  <span className="text-neutral-400">1회 생성 당 예상 비용</span>
+                  <span className="text-sm font-bold text-emerald-400">약 55원 ~ 85원</span>
                 </div>
-                <p className="px-2 text-[10px] text-neutral-500 italic">기본 브레인스토밍 및 카피 생성</p>
+                <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden">
+                  <div className="h-full w-3/4 bg-emerald-500/50" />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
-                  <div className="flex items-center gap-2">
-                    <BrainCircuit className="w-3.5 h-3.5 text-indigo-400" />
-                    <span className="text-neutral-300">Gemini 3.1 Pro</span>
-                  </div>
-                  <span className="font-mono text-indigo-400">$3.50 / 1M 토큰</span>
+                <div className="flex justify-between items-center p-2 rounded-lg bg-white/5">
+                  <span className="text-neutral-300">모델 (Strategy/Copy)</span>
+                  <span className="font-mono text-neutral-400">~ 1.5원</span>
                 </div>
-                <p className="px-2 text-[10px] text-neutral-500 italic">딥리서치 및 고도화된 전략 분석</p>
+                <div className="flex justify-between items-center p-2 rounded-lg bg-white/5">
+                  <span className="text-neutral-300">딥리서치 (선택 시)</span>
+                  <span className="font-mono text-neutral-400">~ 25.0원</span>
+                </div>
+                <div className="flex justify-between items-center p-2 rounded-lg bg-white/5">
+                  <span className="text-neutral-300">이미지 생성 (1K)</span>
+                  <span className="font-mono text-neutral-400">~ 45.0원</span>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
-                  <div className="flex items-center gap-2">
-                    <ImageIcon className="w-3.5 h-3.5 text-pink-400" />
-                    <span className="text-neutral-300">이미지 생성 (1K)</span>
-                  </div>
-                  <span className="font-mono text-pink-400">약 $0.03 / 장</span>
-                </div>
-                <p className="px-2 text-[10px] text-neutral-500 italic">고품질 썸네일 배경 이미지 생성</p>
-              </div>
-
-              <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
-                <p className="text-[10px] text-yellow-200/70 leading-relaxed">
-                  * 위 비용은 Google Cloud 표준 요금 기준 예상치입니다. 무료 티어 범위 내에서는 비용이 발생하지 않을 수 있습니다.
+              <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl space-y-2">
+                <p className="text-[10px] text-red-200/70 leading-relaxed font-medium">
+                  * 1 USD = 1,400원 기준으로 계산된 추정치입니다.
+                </p>
+                <p className="text-[10px] text-neutral-500 leading-relaxed">
+                  * 실제 비용은 질문의 길이, AI의 답변 길이에 따라 오차가 발생할 수 있습니다. 무료 티어 범위 내에서는 실질 비용이 발생하지 않을 수 있습니다.
                 </p>
               </div>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Patch Notes Modal */}
+      <AnimatePresence>
+        {isPatchNotesOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-neutral-900 border border-white/10 rounded-3xl p-8 w-full max-w-2xl shadow-2xl max-h-[80vh] overflow-hidden flex flex-col"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="bg-indigo-500/20 p-2 rounded-xl">
+                    <History className="w-6 h-6 text-indigo-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">혁신 썸네일 AI 패치노트</h3>
+                </div>
+                <button onClick={() => setIsPatchNotesOpen(false)} className="p-2 hover:bg-white/10 rounded-full text-neutral-400 hover:text-white transition-all">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto pr-4 space-y-6 custom-scrollbar">
+                <PatchGroup date="2026-04-19" title="비용 안내 및 패치노트 시스템 도입">
+                  <li>API 사용 비용 안내 시스템 원화(KRW)로 업데이트</li>
+                  <li>패치노트 버튼 및 실시간 업데이트 시스템 추가</li>
+                </PatchGroup>
+
+                <PatchGroup date="2026-04-18" title="다중 이미지 비율 지원">
+                  <li>YouTube(16:9), Shorts(9:16), 1:1, 4:3 비율 선택 기능 추가</li>
+                  <li>프리뷰 영역 실시간 비율 반영 애니메이션 적용</li>
+                </PatchGroup>
+
+                <PatchGroup date="2026-04-01" title="API 비용 안내 기능 추가">
+                  <li>상단 네비게이션 바에 API 비용 안내 오버레이 개발</li>
+                  <li>Gemini 모델 및 이미지 생성 상세 요금 정보 제공</li>
+                </PatchGroup>
+
+                <PatchGroup date="2026-03-17" title="배포 편의성 및 디자인 개선">
+                  <li>Vercel 배포를 위한 커스텀 API 키 입력 및 스토리지 저장 기능</li>
+                  <li>16:9 히어로 배너 교체 및 유튜브 네온 로고 테마 적용</li>
+                  <li>개발자 정보 하단 배지 추가</li>
+                </PatchGroup>
+
+                <PatchGroup date="2026-03-15" title="인물 합성 기능 도입">
+                  <li>인물 사진 업로드 (PNG/JPG) 및 AI 이미지 합성 연동</li>
+                  <li>Canvas API를 이용한 텍스트+이미지 최종 결과물 합성 다운로드</li>
+                </PatchGroup>
+
+                <PatchGroup date="2026-03-12" title="Core 엔진 개발">
+                  <li>Gemini-3-Flash 기반 썸네일 전략 브레인스토밍 엔진 개발</li>
+                  <li>Gemini-3.1-Pro 기반 딥리서치 자동완성 기능 개발</li>
+                  <li>Gemini-3.1-Flash-Image 기반 배경 이미지 생성기 연동</li>
+                </PatchGroup>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-white/5 flex justify-end">
+                <button
+                  onClick={() => setIsPatchNotesOpen(false)}
+                  className="px-8 py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-all"
+                >
+                  확인 완료
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
@@ -981,6 +1053,22 @@ function DataCard({ icon, title, content, highlight = false }: { icon: React.Rea
       <p className={`leading-relaxed ${highlight ? 'text-lg font-bold text-white' : 'text-sm text-neutral-300'}`}>
         {content}
       </p>
+    </div>
+  );
+}
+
+function PatchGroup({ date, title, children }: { date: string, title: string, children: React.ReactNode }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-3">
+        <span className="text-xs font-mono px-2 py-1 bg-white/5 border border-white/10 rounded-md text-neutral-500">
+          {date}
+        </span>
+        <h4 className="text-lg font-bold text-white tracking-tight">{title}</h4>
+      </div>
+      <ul className="pl-6 space-y-2 list-disc text-neutral-400 text-sm leading-relaxed marker:text-indigo-500">
+        {children}
+      </ul>
     </div>
   );
 }
